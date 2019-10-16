@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include "bystringspp.h"
-
 #ifndef _BYTE_STRINGS_PP_H_
 #define _BYTE_STRINGS_PP_H
 
