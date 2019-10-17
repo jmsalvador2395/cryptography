@@ -15,7 +15,7 @@ void tohex(unsigned char* input, int input_size,
 void tohex_in_place(unsigned char* input, int input_size){
 	const char* pos=(const char*) input;
 	int posint=0;
-	for(int i=0; i<input_size; i++){ 
+	for(int i=0; i<input_size/2; i++){ 
 		sscanf(pos+posint, "%2hhx", &input[i]);
 		posint +=2*sizeof(char);
 	}
