@@ -20,7 +20,7 @@ int main(int argc, char** argv){
 	}
 	
 	int keylen=strlen(argv[1])/2;
-	int cipherlen=(strlen(argv[2]))/2;
+	int cipherlen=strlen(argv[2])/2-16;
 
 	tohex_in_place((unsigned char*)argv[1], keylen*2);
 	tohex_in_place((unsigned char*)argv[2], strlen(argv[2]));
@@ -53,7 +53,7 @@ int main(int argc, char** argv){
 	std::string cipher(cipherlen, 0x0);
 	std::cout << cipherlen <<"\n";
 	for(int i=0; i<cipherlen; i++)
-		cipher[i]=argv[2][i];
+		cipher[i]=argv[2][i+16];
 	std::string recovered;
 	CryptoPP::StringSource s(cipher, true, 
 							 new CryptoPP::StreamTransformationFilter(
@@ -78,6 +78,6 @@ int main(int argc, char** argv){
 	printf("\n");
 	*/
 
-	std::cout << recovered.substr(4,recovered.size()) <<"\n";
+	std::cout << recovered <<"\n";
 	return 0;
 }
