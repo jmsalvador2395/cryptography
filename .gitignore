@@ -4,5 +4,6 @@ xorwithspace
 test*
 bspp
 results.txt
-aes
+aes128
 compile*
+*.o
