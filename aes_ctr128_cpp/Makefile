@@ -1,11 +1,11 @@
-aes128: aesctr.o bytestringspp.o
-	g++ -o aes128 aesctr.o bytestringspp.o -lcryptopp
+aesdecrypt: aesctrdecrypt.o bytestringspp.o
+	g++ -o aesdecrypt aesctrdecrypt.o bytestringspp.o -lcryptopp
 bytestringspp.o: ../hexreader_c/bytestringspp.cpp
 	g++ -c ../hexreader_c/bytestringspp.cpp
-aesctr.o: aesctr.cpp
-	g++ -c aesctr.cpp
+aesctrdecrypt.o: aesctrdecrypt.cpp
+	g++ -c aesctrdecrypt.cpp
 clean:
-	rm aes128 *.o
+	rm aesdecrypt *.o
 
 
 

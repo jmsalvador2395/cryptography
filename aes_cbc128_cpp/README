@@ -1,0 +1,9 @@
+compiled with crypto++ version 8.2.0-1 and gcc version 9.2.0
+
+This is an implementation of the CBC block cipher using Crypto++'s built in ProcessBlock
+function for aes.
+
+Encryption program just takes message as input and outputs the key and ciphertext 
+(ciphertext is prepended with IV). Key and IV are automatically generated
+
+

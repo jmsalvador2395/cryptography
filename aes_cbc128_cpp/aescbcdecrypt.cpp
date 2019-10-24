@@ -14,25 +14,16 @@
 
 #include "../hexreader_c/bytestringspp.h"
 
-void bytencpy(CryptoPP::byte* input, CryptoPP::byte* output, int n){
-	for(int i=0; i<n;i++)
-		output[i]=input[i];
-}
-
-void byte_xor_block(CryptoPP::byte* input, CryptoPP::byte* target){
-	for(int i=0; i<16; i++)
-		target[i]=target[i]^input[i];
-}
-
 int main(int argc, char** argv){
 	if(argc != 3){
-		printf("usage:\n\t./aescbc256 [256-bit aes key] [cipher text]\n");
+		printf("usage:\t./aesdecrypt [128-bit aes key] [cipher text]\n");
 		return 1;
 	}
 	
 	int keylen=strlen(argv[1])/2;
 	int cipherlen=strlen(argv[2])/2-16;
 
+	//check if the string meets the required length to decrypt the message
 	if(cipherlen%16>0){
 		printf("Error: Cipher length is not a multiple of 16\n");
 		return 1;
@@ -43,7 +34,9 @@ int main(int argc, char** argv){
 	tohex_in_place((unsigned char*)argv[2], strlen(argv[2]));
 
 	//delcare key and iv
-	CryptoPP::byte key[CryptoPP::AES::DEFAULT_KEYLENGTH], iv[16], temp[16];
+	CryptoPP::byte key[CryptoPP::AES::DEFAULT_KEYLENGTH], 
+				   iv[16],
+				   temp[16];
 
 	for(int i=0; i<16; i++){
 		key[i]=argv[1][i];
@@ -68,13 +61,12 @@ int main(int argc, char** argv){
 
 		bytencpy(temp, iv, 16);
 	}
-	
+
 	//remove pad
 	int padlen=cipher[cipherlen-1];
 	for(int i=0; i<padlen; i++)
 		cipher[cipherlen-1-i]=0x0;
 
-	printf("%s\n", (unsigned char*) cipher);
-
+	printf("\nplaintext:\t%s\n\n", (unsigned char*) cipher);
 	return 0;
 }

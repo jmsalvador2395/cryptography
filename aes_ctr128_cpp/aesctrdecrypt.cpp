@@ -14,18 +14,6 @@
 
 #include "../hexreader_c/bytestringspp.h"
 
-//basically just wrote strncpy but for the CryptoPP::byte type
-void bytencpy(CryptoPP::byte* input, CryptoPP::byte* output, int n){
-	for(int i=0; i<n;i++)
-		output[i]=input[i];
-}
-
-//xor all the bytes into a target array
-void byte_xor(CryptoPP::byte* input, CryptoPP::byte* target, int length){
-	for(int i=0; i<length; i++)
-		target[i]=target[i]^input[i];
-}
-
 //used for incrementing the last 64 bits of the IV
 void add(CryptoPP::byte* iv, unsigned long long int adder){
 
@@ -67,7 +55,6 @@ void ctr_decrypt(CryptoPP::AES::Encryption &aes,
 		add(temp_iv, 1);
 	}
 	if(end%16!=0){
-		printf("%d\n", end%16);
 		aes.ProcessBlock(temp_iv, f_out);
 		byte_xor(f_out, &ciphertext[end-end%16], end%16);
 	}
@@ -77,7 +64,7 @@ void ctr_decrypt(CryptoPP::AES::Encryption &aes,
 
 int main(int argc, char** argv){
 	if(argc != 3){
-		printf("usage:\n\t./aesctr [128-bit aes key] [cipher text]\n");
+		printf("usage:\n\t./aesdecrypt [128-bit aes key] [cipher text]\n");
 		return 1;
 	}
 	
@@ -103,28 +90,17 @@ int main(int argc, char** argv){
 	aes.SetKey(key, keylen);
 
 	//create byte array to hold ciphertext
-	CryptoPP::byte cipher[cipherlen];
+	CryptoPP::byte cipher[cipherlen+1];
+
+	//set last index to null character so printf doesn't print junk
+	cipher[cipherlen]=0x0;
 	for(int i=0; i<cipherlen; i++)
 		cipher[i]=argv[2][i+16];
 
-	//troublshooting
-	for(int i=0; i<cipherlen; i++){
-		printf("%02x ", cipher[i]);
-	}
-	printf("\n");
 	//ctr mode processing
 	ctr_decrypt(aes, cipher, cipherlen, iv, 0, cipherlen);
 		
-	//printf("%s\n", (char*) cipher);
-	//troublshooting
-	for(int i=0; i<cipherlen; i++){
-		printf("%02x ", cipher[i]);
-	}
-	printf("\n");
-	//troublshooting
-	for(int i=0; i<cipherlen; i++){
-		printf("%c ", cipher[i]);
-	}
-	printf("\n");
+	printf("\nplaintext:\t%s\n\n", cipher);
+
 	return 0;
 }
