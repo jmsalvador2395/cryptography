@@ -37,7 +37,7 @@ void add(CryptoPP::byte* iv, unsigned long long int adder){
 
 //putting cbc decryption into its own function so i can make it run in 
 //parallel if i ever get off my lazy butt to do it
-void ctr_decrypt(CryptoPP::AES::Encryption &aes,
+void ctr_process(CryptoPP::AES::Encryption &aes,
 				 CryptoPP::byte* ciphertext, int cipherlen,
 				 CryptoPP::byte* iv, int start, int end){
 	
@@ -98,7 +98,7 @@ int main(int argc, char** argv){
 		cipher[i]=argv[2][i+16];
 
 	//ctr mode processing
-	ctr_decrypt(aes, cipher, cipherlen, iv, 0, cipherlen);
+	ctr_process(aes, cipher, cipherlen, iv, 0, cipherlen);
 		
 	printf("\nplaintext:\t%s\n\n", cipher);
 

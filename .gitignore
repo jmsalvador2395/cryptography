@@ -7,3 +7,5 @@ results.txt
 aes128
 compile*
 *.o
+aesencrypt
+aesdecrypt

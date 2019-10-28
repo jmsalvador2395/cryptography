@@ -1,0 +1,101 @@
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sstream>
+
+#include "cryptopp/cryptlib.h"
+#include "cryptopp/integer.h"
+#include "cryptopp/aes.h"
+#include "cryptopp/filters.h"
+#include "cryptopp/ccm.h"
+#include "cryptopp/hex.h"
+#include "cryptopp/modes.h"
+#include "cryptopp/osrng.h"
+
+#include "../hexreader_c/bytestringspp.h"
+
+void add(CryptoPP::byte* iv, unsigned long long int adder){
+
+	//put the last half of the IV into a long long int
+	unsigned long long int sum=0;
+	for(int i=8; i>0; i--){
+		sum<<=8;
+		sum=sum|iv[16-i];
+	}
+
+	//sum up the given adder and the IV
+	sum+=adder;
+
+	//put the result back into the last 64 bits of the IV
+	for(int i=0; i<8; i++){
+		iv[15-i]=sum&0xffff;
+		sum>>=8;
+	}
+	return;
+}
+
+//putting cbc decryption into its own function so i can make it run in 
+//parallel if i ever get off my lazy butt to do it
+void ctr_process(CryptoPP::AES::Encryption &aes,
+				 CryptoPP::byte* ciphertext, int cipherlen,
+				 CryptoPP::byte* iv, int start, int end){
+	
+	CryptoPP::byte f_out[16], temp_iv[16];
+	memset(f_out, 0x0, 16);
+	memset(temp_iv, 0x0, 16);
+	bytencpy(iv, temp_iv, 16);
+
+	add(temp_iv, start);
+	
+	//process chunks of 16 bytes
+	for(int i=start; i<end/16; i++){
+		aes.ProcessBlock(temp_iv, f_out);
+		byte_xor(f_out, &ciphertext[i*16], 16);
+		add(temp_iv, 1);
+	}
+	if(end%16!=0){
+		aes.ProcessBlock(temp_iv, f_out);
+		byte_xor(f_out, &ciphertext[end-end%16], end%16);
+	}
+
+	return;
+}
+
+
+int main(int argc, char** argv){
+	if(argc != 2){
+		printf("usage:\t./aesencrypt [plain text]\n");
+		return 1;
+	}
+
+	CryptoPP::AutoSeededRandomPool prng;
+	CryptoPP::byte key[CryptoPP::AES::DEFAULT_KEYLENGTH];
+	CryptoPP::byte iv[CryptoPP::AES::BLOCKSIZE];
+	
+	prng.GenerateBlock(key, sizeof(key));
+	prng.GenerateBlock(iv, sizeof(iv));
+
+	//get length of message
+	int msglen=strlen(argv[1]);
+
+	//initialize block cipher
+	CryptoPP::AES::Encryption aes;
+	aes.SetKey(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
+	
+	ctr_process(aes, (CryptoPP::byte*)argv[1], msglen, iv, 0, msglen);
+
+	printf("\nAES Key:\t");
+	for(int i=0; i<CryptoPP::AES::DEFAULT_KEYLENGTH; i++)
+		printf("%02x", key[i]);
+	
+	//print ciphertext with prepended iv
+	printf("\nCiphertext\t");
+	for(int i=0; i<CryptoPP::AES::BLOCKSIZE; i++)
+		printf("%02x", iv[i]);
+	for(int i=0; i<msglen; i++)
+		printf("%02x", (unsigned char)argv[1][i]);
+	printf("\n\n");
+	
+	return 0;
+}
